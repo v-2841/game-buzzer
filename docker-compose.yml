@@ -10,7 +10,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8010:3000" # app served on http://localhost:8010
+      - "127.0.0.1:8010:3000" # app served on http://localhost:8010
     environment:
       - PORT=3000
     restart: unless-stopped

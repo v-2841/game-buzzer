@@ -116,4 +116,6 @@ export interface ClientToServerEvents {
 // ---------------------------------------------------------------------------
 export interface ServerToClientEvents {
   'room:state': (state: RoomState) => void;
+  /** Sent only to a player whose score the admin just changed (toast). */
+  'score:awarded': (data: { delta: number }) => void;
 }

@@ -94,8 +94,14 @@ function makeRoomCode(taken: (code: string) => boolean): string {
 export class RoomManager {
   private rooms = new Map<string, Room>();
 
-  /** Called whenever a room's state changes so the caller can broadcast it. */
-  constructor(private onChange: (room: Room) => void) {}
+  /**
+   * @param onChange broadcast a room's new state to everyone in it.
+   * @param onAward  notify specific sockets that their score changed (toast).
+   */
+  constructor(
+    private onChange: (room: Room) => void,
+    private onAward: (socketIds: string[], delta: number) => void = () => {},
+  ) {}
 
   /** Bump activity timestamp and broadcast the new state. */
   private emit(room: Room): void {
@@ -363,6 +369,7 @@ export class RoomManager {
     room.buzzes = [];
     room.winnerId = undefined;
     this.emit(room);
+    if (clamped !== 0) this.onAward([...player.connections], clamped);
   }
 
   /** Out-of-turn adjustment: admin adds/removes points for any player, any phase. */
@@ -376,6 +383,7 @@ export class RoomManager {
     player.score += clamped;
     room.scoreHistory.push({ id: randomUUID(), playerId, delta: clamped, at: Date.now() });
     this.emit(room);
+    this.onAward([...player.connections], clamped);
   }
 
   /** Change a past scoring entry's delta; the player's score follows the diff. */

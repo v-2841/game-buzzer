@@ -16,6 +16,8 @@ export default function Player() {
   const [state, setState] = useState<RoomState | null>(null);
   const [myId, setMyId] = useState<string | null>(null);
   const [buzzed, setBuzzed] = useState(false);
+  // Transient toast when the admin changes our score. `n` re-triggers the timer.
+  const [award, setAward] = useState<{ delta: number; n: number } | null>(null);
 
   // Report our measured ping so the server can size the buzz window. Only takes
   // effect once we've joined (server keys RTT by playerId), so call it after join.
@@ -31,6 +33,15 @@ export default function Player() {
     const clock = new ClockSync(socket);
     clockRef.current = clock;
     socket.on('room:state', setState);
+
+    // Admin changed our score → toast + a short vibration (respecting motion prefs).
+    let awardSeq = 0;
+    socket.on('score:awarded', ({ delta }) => {
+      setAward({ delta, n: ++awardSeq });
+      if (!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+        navigator.vibrate?.(40);
+      }
+    });
 
     let stopDrift = () => {};
     socket.on('connect', () => {
@@ -68,6 +79,13 @@ export default function Player() {
       setBuzzed(false);
     }
   }, [state?.phase]);
+
+  // Auto-hide the score toast ~3s after it (re)appears.
+  useEffect(() => {
+    if (!award) return;
+    const t = setTimeout(() => setAward(null), 3000);
+    return () => clearTimeout(t);
+  }, [award]);
 
   function join(e: React.FormEvent) {
     e.preventDefault();
@@ -157,6 +175,7 @@ export default function Player() {
 
   return (
     <div className="container py-3 d-flex flex-column" style={{ maxWidth: 480 }}>
+      <AwardToast award={award} />
       <div className="d-flex justify-content-between align-items-center mb-3">
         <button
           className="btn btn-link p-0 fw-bold text-decoration-none"
@@ -226,7 +245,9 @@ function BuzzerButton({
     );
   }
   return (
-    <button className="buzzer btn btn-danger" onClick={onBuzz}>
+    // Fire on press-down, not click (release): faster, and captures the real
+    // press moment. The buzzed-lock + server dedup make the trailing click a no-op.
+    <button className="buzzer btn btn-danger" onPointerDown={onBuzz}>
       ЖМИ!
     </button>
   );
@@ -269,6 +290,35 @@ function errorText(code: string): string {
     kicked: 'Тебя удалили из этой игры',
   };
   return map[code] ?? code;
+}
+
+/** Russian plural of "очко" for a (small) score delta magnitude. */
+function pointsWord(n: number): string {
+  const a = Math.abs(n);
+  if (a === 1) return 'очко';
+  if (a >= 2 && a <= 4) return 'очка';
+  return 'очков';
+}
+
+/** Bottom toast shown for ~1.5s when the admin changes the player's score. */
+function AwardToast({ award }: { award: { delta: number; n: number } | null }) {
+  if (!award) return null;
+  const { delta } = award;
+  return (
+    <div
+      key={award.n}
+      className="toast-container position-fixed bottom-0 start-50 translate-middle-x p-3"
+      style={{ zIndex: 1090 }}
+    >
+      <div
+        className={`toast show border-0 text-white ${delta > 0 ? 'bg-success' : 'bg-danger'}`}
+      >
+        <div className="toast-body text-center fs-5 fw-bold">
+          {delta > 0 ? `+${delta}` : delta} {pointsWord(delta)}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 const MEDALS = ['🥇', '🥈', '🥉'];

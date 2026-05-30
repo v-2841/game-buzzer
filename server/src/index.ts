@@ -29,10 +29,16 @@ const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
   cors: { origin: true },
 });
 
-// Broadcast authoritative state to everyone in the room on any change.
-const rooms = new RoomManager((room: Room) => {
-  io.to(room.id).emit('room:state', rooms.toPublicState(room));
-});
+// Broadcast authoritative state to everyone in the room on any change, and
+// notify a player's own sockets when the admin changes their score.
+const rooms = new RoomManager(
+  (room: Room) => {
+    io.to(room.id).emit('room:state', rooms.toPublicState(room));
+  },
+  (socketIds: string[], delta: number) => {
+    for (const id of socketIds) io.to(id).emit('score:awarded', { delta });
+  },
+);
 
 /** Per-connection identity. */
 interface SocketCtx {
