@@ -1,0 +1,19 @@
+# Development. Builds the dev image (Dockerfile.dev) and bind-mounts the whole
+# repo so code edits hot-reload. node_modules and the lockfile live in local
+# folders (the bind mount). No data volume — the game is in-memory, nothing to persist.
+#
+#   docker compose -f docker-compose.dev.yml up   # start dev (UI on :5173, server on :3000)
+name: buzzer-dev
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "5173:5173" # Vite (UI) — open this from your phone/browser
+      - "3000:3000" # Node + Socket.IO
+    volumes:
+      - ./:/app # live source for hot reload
+    environment:
+      - CHOKIDAR_USEPOLLING=true # reliable file watching across the bind mount
+      - CI=true # let pnpm reinstall non-interactively (no TTY in this container)

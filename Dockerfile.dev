@@ -1,0 +1,9 @@
+# syntax=docker/dockerfile:1
+# Development image: just Node + pnpm. No code is copied in — the source is
+# bind-mounted at runtime (see docker-compose.dev.yml), deps are installed on
+# start, and both dev servers run with hot reload. Used by docker-compose.dev.yml.
+FROM node:24-slim
+WORKDIR /app
+RUN corepack enable
+EXPOSE 5173 3000
+CMD ["bash", "-c", "pnpm install --no-frozen-lockfile && pnpm -r --parallel dev"]

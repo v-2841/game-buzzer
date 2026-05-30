@@ -1,0 +1,18 @@
+{
+  "name": "game-buzzer",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev:server": "pnpm --filter @buzzer/server dev",
+    "dev:client": "pnpm --filter @buzzer/client dev",
+    "dev": "pnpm -r --parallel dev",
+    "typecheck": "pnpm -r typecheck",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test"
+  },
+  "engines": {
+    "node": ">=20.19"
+  },
+  "packageManager": "pnpm@11.5.0"
+}

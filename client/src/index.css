@@ -1,0 +1,29 @@
+/* App-wide tweaks on top of Bootstrap. Mobile-first. */
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Full viewport height that excludes the mobile browser's dynamic toolbar, so
+   vertically-centered screens stay actually centered on phones. dvh overrides
+   the vh fallback where supported. */
+.min-dvh-100 {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* The big buzzer button. */
+.buzzer {
+  width: min(80vw, 320px);
+  height: min(80vw, 320px);
+  border-radius: 50%;
+  font-size: 2rem;
+  font-weight: 700;
+  touch-action: manipulation;
+}

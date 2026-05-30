@@ -1,0 +1,20 @@
+# Never copy installed deps or build artifacts into the image context;
+# the build stage installs and builds from scratch.
+**/node_modules
+**/dist
+**/dist-ssr
+**/.vite
+**/*.tsbuildinfo
+
+# VCS / tooling / local files
+.git
+.gitignore
+.dockerignore
+docker-compose*.yml
+Dockerfile*
+*.log
+.env
+.env.*
+.DS_Store
+.idea
+README.md

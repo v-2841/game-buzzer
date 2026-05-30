@@ -1,0 +1,16 @@
+# Production (default). Builds the self-contained prod image (Dockerfile) and
+# runs it. No bind mounts — the code is baked into the image; no data volume —
+# nothing to persist (in-memory game). This is what you'd run on a real server.
+#
+#   docker compose up --build   # build & run prod locally
+name: buzzer-prod
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8010:3000" # app served on http://localhost:8010
+    environment:
+      - PORT=3000
+    restart: unless-stopped
